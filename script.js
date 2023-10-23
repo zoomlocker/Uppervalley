@@ -12,39 +12,40 @@ const data = [
     {depth: 16.5, cumulativeVol: 1078713}
 ];
 
-const FULL_CAPACITY_CUFT = 864196;
-const CUBIC_FEET_TO_GALLONS = 7.48; // Conversion factor
-
 function calculateVolume() {
-    const depthInput = parseFloat(document.getElementById('depthGauge').value);
+    const gaugeReading = parseFloat(document.getElementById("gaugeReading").value);
+    const maxVolume = 864196;
+    let cumulativeVolumeCubicFeet;
     
-    if (isNaN(depthInput)) {
-        alert('Please enter a valid number for the depth gauge reading.');
-        return;
-    }
-
-    let volume = 0;
-
-    if (depthInput <= 0) {
-        volume = 0;
-    } else if (depthInput >= 16.5) {
-        volume = data[data.length - 1].cumulativeVol;
-    } else {
-        for (let i = 1; i < data.length; i++) {
-            if (depthInput <= data[i].depth) {
-                // Linear interpolation
-                const fraction = (depthInput - data[i-1].depth) / (data[i].depth - data[i-1].depth);
-                volume = data[i-1].cumulativeVol + fraction * (data[i].cumulativeVol - data[i-1].cumulativeVol);
-                break;
-            }
+    // Linear interpolation based on gauge reading
+    for (let i = 1; i < lookupTable.length; i++) {
+        if (gaugeReading <= lookupTable[i].depth) {
+            cumulativeVolumeCubicFeet = lookupTable[i-1].volume + ((gaugeReading - lookupTable[i-1].depth) * 
+            (lookupTable[i].volume - lookupTable[i-1].volume) / (lookupTable[i].depth - lookupTable[i-1].depth));
+            break;
         }
     }
+    
+    const remainingCapacityCubicFeet = maxVolume - cumulativeVolumeCubicFeet;
+    const cubicFeetToGallons = 7.48052; // Conversion factor
+    const cumulativeVolumeGallons = cumulativeVolumeCubicFeet * cubicFeetToGallons;
+    const remainingCapacityGallons = remainingCapacityCubicFeet * cubicFeetToGallons;
 
-    const remainingCapacityCuFt = FULL_CAPACITY_CUFT - volume;
+    document.getElementById("cumulativeVolumeCubicFeet").innerText = cumulativeVolumeCubicFeet.toFixed(2);
+    document.getElementById("remainingCapacityCubicFeet").innerText = remainingCapacityCubicFeet.toFixed(2);
+    document.getElementById("cumulativeVolumeGallons").innerText = cumulativeVolumeGallons.toFixed(2);
+    document.getElementById("remainingCapacityGallons").innerText = remainingCapacityGallons.toFixed(2);
 
-    document.getElementById('cumulativeVolume').textContent = volume.toFixed(2);
-    document.getElementById('capacity').textContent = remainingCapacityCuFt.toFixed(2);
-    document.getElementById('cumulativeVolumeGallons').textContent = (volume * CUBIC_FEET_TO_GALLONS).toFixed(2);
-    document.getElementById('capacityGallons').textContent = (remainingCapacityCuFt * CUBIC_FEET_TO_GALLONS).toFixed(2);
+    // Pie chart using Chart.js
+    const ctx = document.getElementById('capacityChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['Cumulative Volume (gallons)', 'Remaining Capacity (gallons)'],
+            datasets: [{
+                data: [cumulativeVolumeGallons, remainingCapacityGallons],
+                backgroundColor: ['#36A2EB', '#FFCE56']
+            }]
+        }
+    });
 }
-
