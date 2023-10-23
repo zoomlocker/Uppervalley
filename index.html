@@ -1,48 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Water Storage Calculator</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            background-color: #f4f4f4;
-            font-family: 'Arial', sans-serif;
-        }
-        .container {
-            max-width: 600px;
-            margin-top: 50px;
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
-
-<div class="container">
-    <h1>Water Storage Calculator</h1>
-    <div class="mb-3">
-        <label for="depthGauge" class="form-label">Enter Depth Gauge Reading:</label>
-        <input type="number" class="form-control" id="depthGauge" placeholder="Enter value in feet">
+    <div class="container">
+        <h1>Water Storage Calculator</h1>
+        <div class="input-section">
+            <label for="gaugeReading">Enter Depth Gauge Reading:</label>
+            <input type="number" id="gaugeReading">
+            <button onclick="calculateVolume()">Calculate</button>
+        </div>
+        <div class="results">
+            <div class="result-row">
+                <div class="result-item">
+                    <h3>Cumulative Volume</h3>
+                    <p><span id="cumulativeVolumeCubicFeet">0</span> cu.ft.</p>
+                    <p><span id="cumulativeVolumeGallons">0</span> gallons</p>
+                </div>
+                <div class="result-item">
+                    <h3>Remaining Capacity</h3>
+                    <p><span id="remainingCapacityCubicFeet">0</span> cu.ft.</p>
+                    <p><span id="remainingCapacityGallons">0</span> gallons</p>
+                </div>
+            </div>
+            <canvas id="capacityChart" width="400" height="400"></canvas>
+        </div>
     </div>
-    <button class="btn btn-primary w-100" onclick="calculateVolume()">Calculate</button>
-    <div class="mt-4">
-        <h4>Results:</h4>
-        <p>Cumulative Volume (cu.ft): <span id="cumulativeVolume">-</span></p>
-        <p>Remaining Capacity (cu.ft): <span id="capacity">-</span></p>
-        <p>Cumulative Volume (gallons): <span id="cumulativeVolumeGallons">-</span></p>
-        <p>Remaining Capacity (gallons): <span id="capacityGallons">-</span></p>
-    </div>
-</div>
-
-<script src="script.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="script.js"></script>
 </body>
+
 </html>
