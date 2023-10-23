@@ -15,13 +15,13 @@
         <div class="results">
             <div class="result-box">
                 <h3>Cumulative Volume</h3>
-                <p id="cumulativeVolumeCubic">-</p>
-                <p id="cumulativeVolumeGallon">-</p>
+                <p id="cumulativeVolumeCubic">0 cu.ft.</p>
+                <p id="cumulativeVolumeGallon">0 gallons</p>
             </div>
             <div class="result-box">
                 <h3>Remaining Capacity</h3>
-                <p id="remainingCapacityCubic">-</p>
-                <p id="remainingCapacityGallon">-</p>
+                <p id="remainingCapacityCubic">0 cu.ft.</p>
+                <p id="remainingCapacityGallon">0 gallons</p>
             </div>
         </div>
         <div class="chart-container">
@@ -35,25 +35,26 @@
             const gaugeDepth = parseFloat(document.getElementById('gaugeInput').value);
             
             const data = [
-    {depth: 0, cumulativeVol: 0},
-    {depth: 2, cumulativeVol: 92560},
-    {depth: 4, cumulativeVol: 194773},
-    {depth: 6, cumulativeVol: 306949},
-    {depth: 8, cumulativeVol: 429544},
-    {depth: 10, cumulativeVol: 563060},
-    {depth: 12, cumulativeVol: 707822},
-    {depth: 14, cumulativeVol: 864196},
-    {depth: 16, cumulativeVol: 1032685},
-    {depth: 16.5, cumulativeVol: 1078713}
+                { depth: 0, cumulativeVol: 0 },
+                { depth: 2, cumulativeVol: 92560 },
+                { depth: 4, cumulativeVol: 194773 },
+                { depth: 6, cumulativeVol: 306949 },
+                { depth: 8, cumulativeVol: 429544 },
+                { depth: 10, cumulativeVol: 563060 },
+                { depth: 12, cumulativeVol: 707822 },
+                { depth: 14, cumulativeVol: 864196 },
+                { depth: 16, cumulativeVol: 1032685 },
+                { depth: 16.5, cumulativeVol: 1078713 }
             ];
-            const totalVolumeCubic = 864196;
+            
+            const totalVolumeCubic = 1078713;
             const totalVolumeGallon = totalVolumeCubic * 7.48052;  // Conversion factor from cubic feet to gallons
 
             let interpolatedVolume = 0;
             for(let i = 0; i < data.length - 1; i++) {
                 if(gaugeDepth >= data[i].depth && gaugeDepth < data[i + 1].depth) {
                     const fraction = (gaugeDepth - data[i].depth) / (data[i + 1].depth - data[i].depth);
-                    interpolatedVolume = data[i].volume + fraction * (data[i + 1].volume - data[i].volume);
+                    interpolatedVolume = data[i].cumulativeVol + fraction * (data[i + 1].cumulativeVol - data[i].cumulativeVol);
                     break;
                 }
             }
