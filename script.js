@@ -1,5 +1,5 @@
-// Data from the table
-const data = [
+// Given lookup table for depth gauge and corresponding volumes
+const lookupTable = [
     {depth: 0, cumulativeVol: 0},
     {depth: 2, cumulativeVol: 92560},
     {depth: 4, cumulativeVol: 194773},
