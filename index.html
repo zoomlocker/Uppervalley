@@ -1,39 +1,91 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Water Storage Calculator</title>
     <link rel="stylesheet" href="styles.css">
 </head>
-
 <body>
     <div class="container">
         <h1>Water Storage Calculator</h1>
-        <div class="input-section">
-            <label for="gaugeReading">Enter Depth Gauge Reading:</label>
-            <input type="number" id="gaugeReading">
-            <button onclick="calculateVolume()">Calculate</button>
-        </div>
+        <label for="gaugeInput">Enter Depth Gauge Reading:</label>
+        <input type="number" id="gaugeInput">
+        <button onclick="calculate()">Calculate</button>
         <div class="results">
-            <div class="result-row">
-                <div class="result-item">
-                    <h3>Cumulative Volume</h3>
-                    <p><span id="cumulativeVolumeCubicFeet">0</span> cu.ft.</p>
-                    <p><span id="cumulativeVolumeGallons">0</span> gallons</p>
-                </div>
-                <div class="result-item">
-                    <h3>Remaining Capacity</h3>
-                    <p><span id="remainingCapacityCubicFeet">0</span> cu.ft.</p>
-                    <p><span id="remainingCapacityGallons">0</span> gallons</p>
-                </div>
+            <div class="result-box">
+                <h3>Cumulative Volume</h3>
+                <p id="cumulativeVolumeCubic">-</p>
+                <p id="cumulativeVolumeGallon">-</p>
             </div>
-            <canvas id="capacityChart" width="400" height="400"></canvas>
+            <div class="result-box">
+                <h3>Remaining Capacity</h3>
+                <p id="remainingCapacityCubic">-</p>
+                <p id="remainingCapacityGallon">-</p>
+            </div>
+        </div>
+        <div class="chart-container">
+            <canvas id="storageChart"></canvas>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="script.js"></script>
-</body>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        function calculate() {
+            const gaugeDepth = parseFloat(document.getElementById('gaugeInput').value);
+            
+            const data = [
+    {depth: 0, cumulativeVol: 0},
+    {depth: 2, cumulativeVol: 92560},
+    {depth: 4, cumulativeVol: 194773},
+    {depth: 6, cumulativeVol: 306949},
+    {depth: 8, cumulativeVol: 429544},
+    {depth: 10, cumulativeVol: 563060},
+    {depth: 12, cumulativeVol: 707822},
+    {depth: 14, cumulativeVol: 864196},
+    {depth: 16, cumulativeVol: 1032685},
+    {depth: 16.5, cumulativeVol: 1078713}
+            ];
+            const totalVolumeCubic = 864196;
+            const totalVolumeGallon = totalVolumeCubic * 7.48052;  // Conversion factor from cubic feet to gallons
+
+            let interpolatedVolume = 0;
+            for(let i = 0; i < data.length - 1; i++) {
+                if(gaugeDepth >= data[i].depth && gaugeDepth < data[i + 1].depth) {
+                    const fraction = (gaugeDepth - data[i].depth) / (data[i + 1].depth - data[i].depth);
+                    interpolatedVolume = data[i].volume + fraction * (data[i + 1].volume - data[i].volume);
+                    break;
+                }
+            }
+
+            const remainingCapacityCubic = totalVolumeCubic - interpolatedVolume;
+            const remainingCapacityGallon = totalVolumeGallon - interpolatedVolume * 7.48052;
+
+            document.getElementById('cumulativeVolumeCubic').textContent = `${interpolatedVolume.toFixed(2)} cu.ft.`;
+            document.getElementById('cumulativeVolumeGallon').textContent = `${(interpolatedVolume * 7.48052).toFixed(2)} gallons`;
+            document.getElementById('remainingCapacityCubic').textContent = `${remainingCapacityCubic.toFixed(2)} cu.ft.`;
+            document.getElementById('remainingCapacityGallon').textContent = `${remainingCapacityGallon.toFixed(2)} gallons`;
+
+            // Chart
+            const ctx = document.getElementById('storageChart').getContext('2d');
+            if (window.myChart) {
+                window.myChart.destroy();
+            }
+            window.myChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Used Volume', 'Remaining Capacity'],
+                    datasets: [{
+                        data: [interpolatedVolume, remainingCapacityCubic],
+                        backgroundColor: ['#3498db', '#e74c3c'],
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+    </script>
+</body>
 </html>
