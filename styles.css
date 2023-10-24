@@ -68,17 +68,19 @@ button:hover {
     color: #34495e;
 }
 
+.data-box {
+    margin-bottom: 30px;
+    background-color: #f8f9fa;
+    padding: 20px 30px;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
 .result-title {
     font-weight: 600;
     margin-bottom: 15px;
-    padding-bottom: 15px;
-    border-bottom: 2px solid #ecf0f1;
-}
-
-.data-section {
-    padding: 25px 0;
-    border-bottom: 2px solid #ecf0f1;
-    margin-bottom: 25px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e0e0e0;
 }
 
 .pie-chart-container {
