@@ -16,20 +16,19 @@
         <input type="number" step="0.1" id="depthInput">
         <button onclick="calculate()">Calculate</button>
         
-        <div id="results">
-            <h2>Cumulative Volume</h2>
-            <div id="cumulativeVolumeCubic">0 cu.ft.</div>
-            <div id="cumulativeVolumeGallon">0 gallons</div>
-            
-            <h2>Remaining Capacity</h2>
-            <div id="remainingCapacityCubic">0 cu.ft.</div>
-            <div id="remainingCapacityGallon">0 gallons</div>
-        </div>
-
-        <div class="chart-container">
-            <canvas id="volumeChart"></canvas>
-        </div>
+<div id="results">
+    <div class="result-section">
+        <h2>Cumulative Volume</h2>
+        <div id="cumulativeVolumeCubic" class="volume-display">0 cu.ft.</div>
+        <div id="cumulativeVolumeGallon" class="gallon-display">0 gallons</div>
     </div>
+
+    <div class="result-section">
+        <h2>Remaining Capacity</h2>
+        <div id="remainingCapacityCubic" class="volume-display">0 cu.ft.</div>
+        <div id="remainingCapacityGallon" class="gallon-display">0 gallons</div>
+    </div>
+</div>
 
     <script>
         const dataPoints = [
