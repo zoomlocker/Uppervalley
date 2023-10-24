@@ -1,67 +1,58 @@
-/* Reset and general styles */
-body, html {
+/* Resetting some default styles */
+* {
     margin: 0;
     padding: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f7f9fc;
-    color: #333;
-    line-height: 1.6;
+    box-sizing: border-box;
+    font-family: 'Roboto', sans-serif;
+}
+
+body {
+    background-color: #f5f6fa;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
 }
 
 .container {
-    max-width: 800px;
-    margin: 2% auto;
-    background-color: #fff;
-    padding: 20px 40px;
+    background-color: #ffffff;
+    padding: 30px 50px;
     border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-}
-
-/* Typography */
-h1, h2, h3 {
-    color: #2c3e50;
+    box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    max-width: 500px;
 }
 
 h1 {
+    font-weight: 700;
+    font-size: 24px;
+    color: #2c3e50;
     margin-bottom: 20px;
-    font-size: 2.2em;
+    text-align: center;
 }
 
-h2 {
-    margin-top: 25px;
-    margin-bottom: 15px;
-    border-bottom: 2px solid #3498db;
-    padding-bottom: 10px;
-}
-
-/* Input and Button Styles */
-input[type="number"] {
-    padding: 15px;
+input {
     width: 100%;
+    padding: 10px 15px;
     border: none;
-    border-bottom: 2px solid #3498db;
-    background-color: #f7f9fc;
-    font-size: 1.1em;
+    border-radius: 5px;
+    font-size: 16px;
+    background-color: #ecf0f1;
     margin-bottom: 20px;
-    transition: border 0.3s ease;
-}
-
-input[type="number"]:focus {
-    border-bottom-color: #e74c3c;
     outline: none;
 }
 
 button {
-    display: block;
-    background-color: #3498db;
-    color: #fff;
-    padding: 15px 25px;
+    width: 100%;
+    padding: 10px 15px;
     border: none;
     border-radius: 5px;
+    background-color: #3498db;
+    color: #ffffff;
+    font-size: 16px;
     cursor: pointer;
-    font-size: 1em;
-    margin: 20px 0;
-    transition: background 0.3s ease;
+    transition: background-color 0.3s ease;
 }
 
 button:hover {
@@ -69,34 +60,44 @@ button:hover {
 }
 
 .results {
-    margin-top: 20px;
-    background-color: #f7f9fc;
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    margin-top: 30px;
+    font-size: 18px;
+    color: #2c3e50;
 }
 
-#piechart {
-    width: 100%;
-    height: 300px;
-    margin-top: 25px;
+.results .result-title {
+    font-weight: 500;
+    margin-bottom: 10px;
 }
 
-/* Mobile adjustments */
-@media only screen and (max-width: 768px) {
-    .container {
-        padding: 20px 15px;
-    }
+.pie-chart-container {
+    margin-top: 30px;
+    text-align: center;
+}
 
-    h1 {
-        font-size: 1.8em;
-    }
+.pie-chart-legend {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
 
-    h2 {
-        font-size: 1.5em;
-    }
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
 
-    #piechart {
-        height: 250px;
-    }
+.legend-color {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+}
+
+.used-volume {
+    background-color: #3498db;
+}
+
+.remaining-volume {
+    background-color: #e74c3c;
 }
