@@ -5,103 +5,107 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UVDS Leachate Basin Capacity</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>
-    <div class="container">
-        <h1>UVDS Leachate Basin Capacity</h1>
 
-        <div class="input-section">
-            <label for="depth">Enter Depth Gauge Reading:</label>
-            <input type="text" id="depth">
-            <button onclick="calculate()">Calculate</button>
-        </div>
-
-        <div id="results">
-            <div class="result-section">
-                <h2>Cumulative Volume</h2>
-                <div class="volume-display" id="cumulativeVolumeCubic">0 cu.ft.</div>
-                <div class="gallon-display" id="cumulativeVolumeGallon">0 gallons</div>
-            </div>
-            <div class="result-section">
-                <h2>Remaining Capacity</h2>
-                <div class="volume-display" id="remainingVolumeCubic">0 cu.ft.</div>
-                <div class="gallon-display" id="remainingVolumeGallon">0 gallons</div>
-            </div>
-        </div>
-
-        <div class="chart-container" id="pieChart"></div>
-
-        <div class="footer-note">
-            Review & Validation: Before making critical decisions based on this data, it's advisable to cross-check and validate the information, especially if there have been changes to the pond structure or topography since the last CAD update.
-        </div>
+<div class="container">
+    <h1>UVDS Leachate Basin Capacity</h1>
+    <div class="input-section">
+        <label for="depth">Enter Depth Gauge Reading:</label>
+        <input type="number" id="depth" step="0.1">
+        <button onclick="calculate()">Calculate</button>
     </div>
 
-    <script src="app.js"></script>
+    <div class="output-section">
+        <div class="output-box">
+            <h2>Cumulative Volume</h2>
+            <p id="cumulativeVolume"></p>
+            <p id="cumulativeVolumeGallons"></p>
+        </div>
 
-    <script>
-        const dataPoints = [
-            { depth: 0, cumulativeVol: 0 },
-            { depth: 2, cumulativeVol: 92560 },
-            { depth: 4, cumulativeVol: 194773 },
-            { depth: 6, cumulativeVol: 306949 },
-            { depth: 8, cumulativeVol: 429544 },
-            { depth: 10, cumulativeVol: 563060 },
-            { depth: 12, cumulativeVol: 707822 },
-            { depth: 14, cumulativeVol: 864196 },
-            { depth: 14.5, cumulativeVol: 1032685 }
-        ];
+        <div class="output-box">
+            <h2>Remaining Capacity</h2>
+            <p id="remainingCapacity"></p>
+            <p id="remainingCapacityGallons"></p>
+        </div>
+    </div>
+    
+    <div id="piechart"></div>
+    
+    <footer>
+        Review & Validation: Before making critical decisions based on this data, it's advisable to cross-check and validate the information, especially if there have been changes to the pond structure or topography since the last CAD update.
+    </footer>
+</div>
 
-        let pieChart = null; 
+<script src="https://www.gstatic.com/charts/loader.js"></script>
+<script>
+    google.charts.load('current', {'packages':['corechart']});
 
-        function calculate() {
-            const inputDepth = parseFloat(document.getElementById('depthInput').value);
-            const maxDepth = dataPoints[dataPoints.length - 1].depth;
-            const maxVolume = dataPoints[dataPoints.length - 1].cumulativeVol;
-            let interpolatedVolume = 0;
+    const maxVolume = 1032685; // this is the volume at the max depth of 14.5 ft
+    const gallonConversion = 7.48;
 
-            if (inputDepth <= maxDepth && inputDepth >= 0) {
-                for (let i = 1; i < dataPoints.length; i++) {
-                    if (inputDepth <= dataPoints[i].depth) {
-                        interpolatedVolume = dataPoints[i - 1].cumulativeVol + ((inputDepth - dataPoints[i - 1].depth) / (dataPoints[i].depth - dataPoints[i - 1].depth)) * (dataPoints[i].cumulativeVol - dataPoints[i - 1].cumulativeVol);
-                        break;
-                    }
-                }
+    const dataPoints = [
+        { depth: 0, cumulativeVol: 0 },
+        { depth: 2, cumulativeVol: 92560 },
+        { depth: 4, cumulativeVol: 194773 },
+        { depth: 6, cumulativeVol: 306949 },
+        { depth: 8, cumulativeVol: 429544 },
+        { depth: 10, cumulativeVol: 563060 },
+        { depth: 12, cumulativeVol: 707822 },
+        { depth: 14, cumulativeVol: 864196 },
+        { depth: 14.5, cumulativeVol: 1032685 }
+    ];
+
+    function interpolate(volume1, volume2, depth1, depth2, depth) {
+        return volume1 + ((volume2 - volume1) / (depth2 - depth1)) * (depth - depth1);
+    }
+
+    function calculate() {
+        const depth = parseFloat(document.getElementById("depth").value);
+        let cumulativeVolume = 0;
+
+        for (let i = 1; i < dataPoints.length; i++) {
+            if (depth >= dataPoints[i].depth) {
+                cumulativeVolume = dataPoints[i].cumulativeVol;
+            } else {
+                cumulativeVolume = interpolate(
+                    dataPoints[i - 1].cumulativeVol,
+                    dataPoints[i].cumulativeVol,
+                    dataPoints[i - 1].depth,
+                    dataPoints[i].depth,
+                    depth
+                );
+                break;
             }
-
-            const remainingCapacityCubic = maxVolume - interpolatedVolume;
-            const remainingCapacityGallon = remainingCapacityCubic * 7.48052;
-
-            document.getElementById('cumulativeVolumeCubic').textContent = `${Math.round(interpolatedVolume).toLocaleString()} cu.ft.`;
-            document.getElementById('cumulativeVolumeGallon').textContent = `${Math.round(interpolatedVolume * 7.48052).toLocaleString()} gallons`;
-            document.getElementById('remainingCapacityCubic').textContent = `${Math.round(remainingCapacityCubic).toLocaleString()} cu.ft.`;
-            document.getElementById('remainingCapacityGallon').textContent = `${Math.round(remainingCapacityGallon).toLocaleString()} gallons`;
-
-            drawPieChart(Math.round(interpolatedVolume * 7.48052), Math.round(remainingCapacityGallon));
         }
 
-        function drawPieChart(used, remaining) {
-            const ctx = document.getElementById('volumeChart').getContext('2d');
-            
-            if (pieChart) {
-                pieChart.destroy();
-            }
+        const remainingCapacity = maxVolume - cumulativeVolume;
 
-            pieChart = new Chart(ctx, {
-                type: 'pie',
-                data: {
-                    labels: ['Used Volume', 'Remaining Capacity'],
-                    datasets: [{
-                        data: [used, remaining],
-                        backgroundColor: ['#3498db', '#e74c3c']
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
-            });
-        }
-    </script>
+        document.getElementById("cumulativeVolume").textContent = Intl.NumberFormat().format(Math.round(cumulativeVolume)) + " cu.ft.";
+        document.getElementById("cumulativeVolumeGallons").textContent = Intl.NumberFormat().format(Math.round(cumulativeVolume * gallonConversion)) + " gallons";
+        document.getElementById("remainingCapacity").textContent = Intl.NumberFormat().format(Math.round(remainingCapacity)) + " cu.ft.";
+        document.getElementById("remainingCapacityGallons").textContent = Intl.NumberFormat().format(Math.round(remainingCapacity * gallonConversion)) + " gallons";
+
+        drawChart(cumulativeVolume, remainingCapacity);
+    }
+
+    function drawChart(cumulativeVolume, remainingCapacity) {
+        var data = google.visualization.arrayToDataTable([
+            ['Task', 'Volume'],
+            ['Used Volume', cumulativeVolume],
+            ['Remaining Capacity', remainingCapacity]
+        ]);
+
+        var options = {
+            title: 'Basin Capacity',
+            pieHole: 0.4,
+            colors: ['#3498db', '#e74c3c'],
+        };
+
+        var chart = new google.visualization.PieChart(document.getElementById('piechart'));
+        chart.draw(data, options);
+    }
+</script>
+
 </body>
 </html>
