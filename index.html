@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UVDS Leachate Basin Storage Calculator</title>
+    <title>Water Storage Calculator</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
-        <h1>UVDS Leachate Basin Storage Calculator</h1>
+        <h1>Water Storage Calculator</h1>
         <label for="gaugeInput">Enter Depth Gauge Reading:</label>
-        <input type="number" id="gaugeInput">
+        <input type="number" id="gaugeInput" max="14.5">
         <button onclick="calculate()">Calculate</button>
         <div class="results">
             <div class="result-box">
@@ -24,12 +24,8 @@
                 <p id="remainingCapacityGallon">0 gallons</p>
             </div>
         </div>
-        <div class="chart-container">
-            <canvas id="storageChart"></canvas>
-        </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         function calculate() {
             const gaugeDepth = parseFloat(document.getElementById('gaugeInput').value);
@@ -42,15 +38,12 @@
                 { depth: 8, cumulativeVol: 429544 },
                 { depth: 10, cumulativeVol: 563060 },
                 { depth: 12, cumulativeVol: 707822 },
-                { depth: 14, cumulativeVol: 864196 },
-                { depth: 16, cumulativeVol: 1032685 },
-                { depth: 16.5, cumulativeVol: 1078713 }
+                { depth: 14, cumulativeVol: 864196 }
             ];
-            
-            const totalVolumeCubic = 1078713;
-            const totalVolumeGallon = totalVolumeCubic * 7.48052;  // Conversion factor from cubic feet to gallons
 
-            let interpolatedVolume = 0;
+            const maxVolumeCubic = 864196; // the volume at depth 14.5
+
+            let interpolatedVolume = maxVolumeCubic; // defaulting to max volume if input is 14.5
             for(let i = 0; i < data.length - 1; i++) {
                 if(gaugeDepth >= data[i].depth && gaugeDepth < data[i + 1].depth) {
                     const fraction = (gaugeDepth - data[i].depth) / (data[i + 1].depth - data[i].depth);
@@ -59,33 +52,13 @@
                 }
             }
 
-            const remainingCapacityCubic = totalVolumeCubic - interpolatedVolume;
-            const remainingCapacityGallon = totalVolumeGallon - interpolatedVolume * 7.48052;
+            const remainingCapacityCubic = maxVolumeCubic - interpolatedVolume;
+            const remainingCapacityGallon = remainingCapacityCubic * 7.48052;
 
-            document.getElementById('cumulativeVolumeCubic').textContent = `${interpolatedVolume.toFixed(2)} cu.ft.`;
-            document.getElementById('cumulativeVolumeGallon').textContent = `${(interpolatedVolume * 7.48052).toFixed(2)} gallons`;
-            document.getElementById('remainingCapacityCubic').textContent = `${remainingCapacityCubic.toFixed(2)} cu.ft.`;
-            document.getElementById('remainingCapacityGallon').textContent = `${remainingCapacityGallon.toFixed(2)} gallons`;
-
-            // Chart
-            const ctx = document.getElementById('storageChart').getContext('2d');
-            if (window.myChart) {
-                window.myChart.destroy();
-            }
-            window.myChart = new Chart(ctx, {
-                type: 'pie',
-                data: {
-                    labels: ['Used Volume', 'Remaining Capacity'],
-                    datasets: [{
-                        data: [interpolatedVolume, remainingCapacityCubic],
-                        backgroundColor: ['#3498db', '#e74c3c'],
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
-            });
+            document.getElementById('cumulativeVolumeCubic').textContent = `${Math.round(interpolatedVolume).toLocaleString()} cu.ft.`;
+            document.getElementById('cumulativeVolumeGallon').textContent = `${Math.round(interpolatedVolume * 7.48052).toLocaleString()} gallons`;
+            document.getElementById('remainingCapacityCubic').textContent = `${Math.round(remainingCapacityCubic).toLocaleString()} cu.ft.`;
+            document.getElementById('remainingCapacityGallon').textContent = `${Math.round(remainingCapacityGallon).toLocaleString()} gallons`;
         }
     </script>
 </body>
