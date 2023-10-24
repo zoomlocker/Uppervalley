@@ -17,7 +17,16 @@ body {
 h1 {
     text-align: center;
     color: #333;
+    margin-bottom: 30px;
+}
+
+.input-section {
     margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 10px;
 }
 
 button {
@@ -30,6 +39,7 @@ button {
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    margin-top: 10px;
 }
 
 button:hover {
@@ -39,7 +49,6 @@ button:hover {
 input[type="text"] {
     width: 100%;
     padding: 10px;
-    margin-bottom: 10px;
     border-radius: 5px;
     border: 1px solid #ccc;
 }
@@ -54,8 +63,8 @@ input[type="text"] {
 .result-section {
     background-color: #fff;
     padding: 15px;
-    flex-basis: 48%; /* This ensures that the boxes take up nearly half the width, with a tiny space in between */
-    box-sizing: border-box; /* Ensures padding is included in the width */
+    flex-basis: 48%; 
+    box-sizing: border-box; 
     margin-bottom: 20px;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -84,12 +93,18 @@ h2 {
     height: 300px;
 }
 
-/* Responsive for smaller screens */
+.footer-note {
+    font-size: 12px;
+    color: #888;
+    margin-top: 20px;
+    text-align: center;
+}
+
 @media (max-width: 600px) {
     #results {
         flex-direction: column;
     }
-    
+
     .result-section {
         flex-basis: 100%;
     }
