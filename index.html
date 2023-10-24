@@ -1,119 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UVDS Leachate Basin Capacity</title>
+    <title>Pond Depth and Volume Calculator</title>
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
-<body>
 
-<div class="container">
-    <h1>UVDS Leachate Basin Capacity</h1>
+<body>
+    <h1>UVDS Leachate Pond Depth and Volume Calculator</h1>
+
     <div class="input-section">
         <div class="input-label">
-            <label for="depth">Enter Depth Gauge Reading:</label>
+            <label for="gaugeDepth">Enter Gauge Depth Reading (feet):</label>
+            <input type="number" id="gaugeDepth" step="0.1">
         </div>
-        <div class="input-control">
-            <input type="number" id="depth" step="0.1">
-            <button onclick="calculate()">Calculate</button>
+
+        <div class="rainfall-input">
+            <div class="input-label">
+                <label for="rainfall">Enter Anticipated Rainfall (inches):</label>
+                <input type="number" id="rainfall" step="0.1">
+                <button onclick="calculateRainfall()">Calculate Rainfall Impact</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="output-section">
+        <div class="output-box">
+            <h2>Current Volume & Capacity</h2>
+            <p id="currentVolume"></p>
+            <p id="currentVolumeGallons"></p>
+        </div>
+
+        <div class="output-box">
+            <h2>Anticipated Volume from Rainfall</h2>
+            <p id="anticipatedVolume"></p>
+            <p id="anticipatedVolumeGallons"></p>
+        </div>
+
+        <div class="output-box">
+            <h2>New Total Volume & Capacity</h2>
+            <p id="newTotalVolume"></p>
+            <p id="newRemainingCapacity"></p>
         </div>
     </div>
 
-    <div class="output-section data-section">
-        <!-- Cumulative Volume Box -->
-        <div class="data-box">
-            <div class="result-title">Cumulative Volume</div>
-            <div id="cumulativeVolume"></div>
-            <div id="cumulativeVolumeGallons"></div>
-        </div>
-
-        <!-- Remaining Capacity Box -->
-        <div class="data-box">
-            <div class="result-title">Remaining Capacity</div>
-            <div id="remainingCapacity"></div>
-            <div id="remainingCapacityGallons"></div>
-        </div>
-    </div>
-    
-    <div id="piechart"></div>
-    
-    <footer>
-        Review & Validation: Before making critical decisions based on this data, it's advisable to cross-check and validate the information, especially if there have been changes to the pond structure or topography since the last CAD update.
-    </footer>
-</div>
-
-
-<script src="https://www.gstatic.com/charts/loader.js"></script>
-<script>
-    google.charts.load('current', {'packages':['corechart']});
-
-    const maxVolume = 1032685; // this is the volume at the max depth of 14.5 ft
-    const gallonConversion = 7.48;
-
-    const dataPoints = [
-        { depth: 0, cumulativeVol: 0 },
-        { depth: 2, cumulativeVol: 92560 },
-        { depth: 4, cumulativeVol: 194773 },
-        { depth: 6, cumulativeVol: 306949 },
-        { depth: 8, cumulativeVol: 429544 },
-        { depth: 10, cumulativeVol: 563060 },
-        { depth: 12, cumulativeVol: 707822 },
-        { depth: 14, cumulativeVol: 864196 },
-        { depth: 14.5, cumulativeVol: 1032685 }
-    ];
-
-    function interpolate(volume1, volume2, depth1, depth2, depth) {
-        return volume1 + ((volume2 - volume1) / (depth2 - depth1)) * (depth - depth1);
-    }
-
-    function calculate() {
-        const depth = parseFloat(document.getElementById("depth").value);
-        let cumulativeVolume = 0;
-
-        for (let i = 1; i < dataPoints.length; i++) {
-            if (depth >= dataPoints[i].depth) {
-                cumulativeVolume = dataPoints[i].cumulativeVol;
-            } else {
-                cumulativeVolume = interpolate(
-                    dataPoints[i - 1].cumulativeVol,
-                    dataPoints[i].cumulativeVol,
-                    dataPoints[i - 1].depth,
-                    dataPoints[i].depth,
-                    depth
-                );
-                break;
-            }
-        }
-
-        const remainingCapacity = maxVolume - cumulativeVolume;
-
-        document.getElementById("cumulativeVolume").textContent = Intl.NumberFormat().format(Math.round(cumulativeVolume)) + " cu.ft.";
-        document.getElementById("cumulativeVolumeGallons").textContent = Intl.NumberFormat().format(Math.round(cumulativeVolume * gallonConversion)) + " gallons";
-        document.getElementById("remainingCapacity").textContent = Intl.NumberFormat().format(Math.round(remainingCapacity)) + " cu.ft.";
-        document.getElementById("remainingCapacityGallons").textContent = Intl.NumberFormat().format(Math.round(remainingCapacity * gallonConversion)) + " gallons";
-
-        drawChart(cumulativeVolume, remainingCapacity);
-    }
-
-    function drawChart(cumulativeVolume, remainingCapacity) {
-        var data = google.visualization.arrayToDataTable([
-            ['Task', 'Volume'],
-            ['Used Volume', cumulativeVolume],
-            ['Remaining Capacity', remainingCapacity]
-        ]);
-
-        var options = {
-            title: 'Basin Capacity',
-            pieHole: 0.4,
-            colors: ['#3498db', '#e74c3c'],
-        };
-
-        var chart = new google.visualization.PieChart(document.getElementById('piechart'));
-        chart.draw(data, options);
-    }
-</script>
-
+    <script src="script.js"></script>
 </body>
+
 </html>
