@@ -1,109 +1,67 @@
-google.charts.load('current', {'packages':['corechart']});
-google.charts.setOnLoadCallback(drawInitialChart);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UVDS Leachate Basin Capacity</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
 
-const maxVolumeCubicYards = 1032685 / 27; // Convert the maximum volume to cubic yards
-const gallonConversion = 7.48;
-const cubicYardsToCubicFeet = 27;
+<div class="container">
+    <h1>UVDS Leachate Basin Capacity</h1>
+    <div class="input-section">
+        <div class="input-label">
+            <label for="depth">Enter Depth Gauge Reading (ft):</label>
+        </div>
+        <div class="input-control">
+            <input type="number" id="depth" step="0.1" required>
+        </div>
+        
+        <div class="input-label">
+            <label for="rainfall">Anticipated Rainfall (inches):</label>
+        </div>
+        <div class="input-control">
+            <input type="number" id="rainfall" step="0.01" required>
+        </div>
+        
+        <button onclick="calculate()">Calculate</button>
+    </div>
 
-const depthData = [
-    { elevation: 106.5, volume: 41145, depthIncreasePerInch: 3.36 },
-    { elevation: 106, volume: 39441, depthIncreasePerInch: 3.72 },
-    { elevation: 104.5, volume: 34721, depthIncreasePerInch: 3.93 },
-    { elevation: 104, volume: 33204, depthIncreasePerInch: 4.00 },
-    { elevation: 102, volume: 27416, depthIncreasePerInch: 4.32 },
-    { elevation: 100, volume: 22057, depthIncreasePerInch: 4.67 },
-    { elevation: 98, volume: 17115, depthIncreasePerInch: 5.08 },
-    { elevation: 96, volume: 12580, depthIncreasePerInch: 5.54 },
-    { elevation: 94, volume: 8428, depthIncreasePerInch: 6.07 },
-    { elevation: 92, volume: 4644, depthIncreasePerInch: 6.68 },
-    { elevation: 90, volume: 1216, depthIncreasePerInch: 7.40 }
-];
+    <div class="output-section">
+        <div class="data-box">
+            <div class="result-title">Cumulative Volume</div>
+            <div id="cumulativeVolume" class="result-value"></div>
+        </div>
 
-function drawInitialChart() {
-    var data = google.visualization.arrayToDataTable([
-        ['Volume', 'Amount'],
-        ['Cumulative Volume', 0],
-        ['Remaining Capacity', maxVolumeCubicYards * cubicYardsToCubicFeet],
-        ['Volume After Rainfall', 0]
-    ]);
+        <div class="data-box">
+            <div class="result-title">Remaining Capacity</div>
+            <div id="remainingCapacity" class="result-value"></div>
+        </div>
+        
+        <div class="data-box">
+            <div class="result-title">Anticipated Depth Increase (ft)</div>
+            <div id="anticipatedDepthIncrease" class="result-value"></div>
+        </div>
 
-    var options = {
-        title: 'Basin Capacity - Initial State',
-        pieHole: 0.4,
-        colors: ['#e0e0e0', '#3498db', '#c7ecee'],
-        is3D: false,
-        pieSliceText: 'none',
-        legend: { position: 'none' },
-        animation: {
-            startup: true,
-            duration: 1000,
-            easing: 'out',
-        }
-    };
-
-    var chart = new google.visualization.PieChart(document.getElementById('piechart'));
-    chart.draw(data, options);
-}
-
-function calculate() {
-    const depth = parseFloat(document.getElementById('depth').value);
-    const anticipatedRainfall = parseFloat(document.getElementById('rainfall').value);
+        <div class="data-box">
+            <div class="result-title">New Volume After Rainfall</div>
+            <div id="newVolume" class="result-value"></div>
+        </div>
+    </div>
     
-    const volumeCubicYards = interpolate(depthData, depth, 'elevation', 'volume');
-    const depthIncreasePerInch = interpolate(depthData, depth, 'elevation', 'depthIncreasePerInch');
+    <div id="piechart"></div>
     
-    const depthIncrease = depthIncreasePerInch * anticipatedRainfall;
-    const newDepth = depth + depthIncrease;
-    const newVolumeCubicYards = interpolate(depthData, newDepth, 'elevation', 'volume');
+    <footer>
+        Review & Validation: Before making critical decisions based on this data, it's advisable to cross-check and validate the information...
+    </footer>
+</div>
 
-    const volumeCubicFeet = volumeCubicYards * cubicYardsToCubicFeet;
-    const volumeGallons = volumeCubicFeet * gallonConversion;
-    const remainingCapacityCubicYards = maxVolumeCubicYards - volumeCubicYards;
-    const remainingCapacityCubicFeet = remainingCapacityCubicYards * cubicYardsToCubicFeet;
-    const remainingCapacityGallons = remainingCapacityCubicFeet * gallonConversion;
-    const newVolumeCubicFeet = newVolumeCubicYards * cubicYardsToCubicFeet;
-    const newVolumeGallons = newVolumeCubicFeet * gallonConversion;
+<script src="https://www.gstatic.com/charts/loader.js"></script>
+<script>
+// Your script.js code goes here inline or as an external file
+</script>
 
-    document.getElementById('cumulativeVolume').textContent = `${volumeCubicFeet.toFixed(2)} cu.ft. / ${volumeGallons.toFixed(2)} gallons`;
-    document.getElementById('remainingCapacity').textContent = `${remainingCapacityCubicFeet.toFixed(2)} cu.ft. / ${remainingCapacityGallons.toFixed(2)} gallons`;
-    document.getElementById('anticipatedDepthIncrease').textContent = `${depthIncrease.toFixed(2)} ft`;
-    document.getElementById('newVolume').textContent = `${newVolumeCubicFeet.toFixed(2)} cu.ft. / ${newVolumeGallons.toFixed(2)} gallons`;
-
-    drawChart(volumeCubicFeet, remainingCapacityCubicFeet, newVolumeCubicFeet);
-}
-
-function interpolate(data, value, keyX, keyY) {
-    let i = 0;
-    while (i < data.length && value > data[i][keyX]) {
-        i++;
-    }
-    if (i === 0) {
-        return data[0][keyY];
-    } else if (i === data.length) {
-        return data[data.length - 1][keyY];
-    }
-    const x1 = data[i - 1][keyX];
-    const y1 = data[i - 1][keyY];
-    const x2 = data[i][keyX];
-    const y2 = data[i][keyY];
-
-    return y1 + (y2 - y1) * (value - x1) / (x2 - x1);
-}
-
-function drawChart(cumulativeVolume, remainingCapacity, newVolume) {
-    var data = google.visualization.arrayToDataTable([
-        ['Volume', 'Amount'],
-        ['Cumulative Volume', cumulativeVolume],
-        ['Remaining Capacity', remainingCapacity],
-        ['Volume After Rainfall', newVolume]
-    ]);
-
-    var options = {
-        title: 'Basin Capacity',
-        pieHole: 0.4,
-        colors: ['#3498db', '#e74c3c', '#f1c40f']
-    };
-
-    var chart = new google.visualization.PieChart(document.getElementById('piechart'));
-    chart.draw(data, options);
-}
+</body>
+</html>
