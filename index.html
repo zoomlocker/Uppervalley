@@ -13,171 +13,163 @@
     <h1>UVDS Leachate Basin Capacity</h1>
     <div class="input-section">
         <div class="input-label">
-            <label for="depth">Enter Depth Gauge Reading (ft):</label>
+            <label for="depth">Enter Depth Gauge Reading:</label>
         </div>
         <div class="input-control">
-            <input type="number" id="depth" step="0.1" required>
+            <input type="number" id="depth" step="0.1">
         </div>
-        
         <div class="input-label">
             <label for="rainfall">Anticipated Rainfall (inches):</label>
         </div>
         <div class="input-control">
-            <input type="number" id="rainfall" step="0.01" required>
+            <input type="number" id="rainfall" step="0.01">
+            <button onclick="calculate()">Calculate</button>
         </div>
-        
-        <button onclick="calculate()">Calculate</button>
     </div>
 
-    <div class="output-section">
+    <div class="output-section data-section">
+        <!-- Cumulative Volume Box -->
         <div class="data-box">
             <div class="result-title">Cumulative Volume</div>
-            <div id="cumulativeVolume" class="result-value"></div>
+            <div id="cumulativeVolume"></div>
+            <div id="cumulativeVolumeGallons"></div>
         </div>
 
+        <!-- Remaining Capacity Box -->
         <div class="data-box">
             <div class="result-title">Remaining Capacity</div>
-            <div id="remainingCapacity" class="result-value"></div>
+            <div id="remainingCapacity"></div>
+            <div id="remainingCapacityGallons"></div>
         </div>
         
+        <!-- Anticipated Increase in Depth -->
         <div class="data-box">
             <div class="result-title">Anticipated Depth Increase (ft)</div>
-            <div id="anticipatedDepthIncrease" class="result-value"></div>
+            <div id="anticipatedDepthIncrease"></div>
         </div>
-
+        
+        <!-- New Volume After Rainfall -->
         <div class="data-box">
             <div class="result-title">New Volume After Rainfall</div>
-            <div id="newVolume" class="result-value"></div>
+            <div id="newVolumeAfterRain"></div>
+            <div id="newVolumeGallonsAfterRain"></div>
         </div>
     </div>
     
     <div id="piechart"></div>
     
     <footer>
-        Review & Validation: Before making critical decisions based on this data, it's advisable to cross-check and validate the information...
+        Review & Validation: Before making critical decisions based on this data, it's advisable to cross-check and validate the information, especially if there have been changes to the pond structure or topography since the last CAD update.
     </footer>
 </div>
 
+
 <script src="https://www.gstatic.com/charts/loader.js"></script>
 <script>
-google.charts.load('current', {'packages':['corechart']});
-google.charts.setOnLoadCallback(drawInitialChart);
+    google.charts.load('current', {'packages':['corechart']});
 
-const gallonConversion = 7.48;
-const cubicYardsToCubicFeet = 27;
-const maxVolumeCubicYards = 1032685 / cubicYardsToCubicFeet; // Converted to cubic yards
+    const maxVolume = 1032685; // this is the volume at the max depth of 14.5 ft
+    const gallonConversion = 7.48;
 
-const depthData = [
-    { elevation: 106.5, volume: 41145, depthIncreasePerInch: 3.36 },
-    { elevation: 106, volume: 39441, depthIncreasePerInch: 3.72 },
-    { elevation: 104.5, volume: 34721, depthIncreasePerInch: 3.93 },
-    { elevation: 104, volume: 33204, depthIncreasePerInch: 4.00 },
-    { elevation: 102, volume: 27416, depthIncreasePerInch: 4.32 },
-    { elevation: 100, volume: 22057, depthIncreasePerInch: 4.67 },
-    { elevation: 98, volume: 17115, depthIncreasePerInch: 5.08 },
-    { elevation: 96, volume: 12580, depthIncreasePerInch: 5.54 },
-    { elevation: 94, volume: 8428, depthIncreasePerInch: 6.07 },
-    { elevation: 92, volume: 4644, depthIncreasePerInch: 6.68 },
-    { elevation: 90, volume: 1216, depthIncreasePerInch: 7.40 }
-];
+    // Added the depth increase per inch of rainfall to the dataPoints array
+    const dataPoints = [
+    { depth: 0, cumulativeVol: 0, depthIncreasePerInch: 7.397 },
+    { depth: 2, cumulativeVol: 92560, depthIncreasePerInch: 6.677 },
+    { depth: 4, cumulativeVol: 194773, depthIncreasePerInch: 6.067 },
+    { depth: 6, cumulativeVol: 306949, depthIncreasePerInch: 5.545 },
+    { depth: 8, cumulativeVol: 429544, depthIncreasePerInch: 5.079 },
+    { depth: 10, cumulativeVol: 563060, depthIncreasePerInch: 4.674 },
+    { depth: 12, cumulativeVol: 707822, depthIncreasePerInch: 4.319 },
+    { depth: 14, cumulativeVol: 864196, depthIncreasePerInch: 4.005 },
+    { depth: 16, cumulativeVol: 1032685, depthIncreasePerInch: 3.720 },
+    { depth: 16.5, cumulativeVol: 1078713, depthIncreasePerInch: 3.359 }
+    ];
 
-function drawInitialChart() {
-    var data = google.visualization.arrayToDataTable([
-        ['Volume', 'Amount'],
-        ['Current Volume', 0],
-        ['Remaining Capacity', maxVolumeCubicYards * cubicYardsToCubicFeet],
-        ['Volume After Rainfall', 0]
-    ]);
-
-    var options = {
-        title: 'Basin Capacity - Initial State',
-        pieHole: 0.4,
-        colors: ['#e0e0e0', '#3498db', '#c7ecee'],
-        is3D: false,
-        pieSliceText: 'none',
-        legend: { position: 'none' },
-        animation: {
-            startup: true,
-            duration: 1000,
-            easing: 'out',
-        }
-    };
-
-    var chart = new google.visualization.PieChart(document.getElementById('piechart'));
-    chart.draw(data, options);
-}
-
-function calculate() {
-    const depth = parseFloat(document.getElementById('depth').value);
-    const anticipatedRainfall = parseFloat(document.getElementById('rainfall').value);
-
-    if (isNaN(depth) || isNaN(anticipatedRainfall)) {
-        alert("Please enter valid numbers for depth and rainfall.");
-        return;
+    function interpolate(value1, value2, depth1, depth2, depth) {
+        return value1 + ((value2 - value1) / (depth2 - depth1)) * (depth - depth1);
     }
 
-    const volumeCubicYards = interpolate(depthData, depth, 'elevation', 'volume');
-    const depthIncreasePerInch = interpolate(depthData, depth, 'elevation', 'depthIncreasePerInch');
-    
-    const depthIncrease = depthIncreasePerInch * anticipatedRainfall;
-    const newDepth = depth + depthIncrease;
-    const newVolumeCubicYards = interpolate(depthData, newDepth, 'elevation', 'volume');
+    function calculate() {
+        const depth = parseFloat(document.getElementById("depth").value);
+        const anticipatedRainfall = parseFloat(document.getElementById("rainfall").value);
+        let cumulativeVolume = 0;
+        let depthIncreasePerInch = 0;
 
-    const volumeCubicFeet = volumeCubicYards * cubicYardsToCubicFeet;
-    const volumeGallons = volumeCubicFeet * gallonConversion;
-    const remainingCapacityCubicYards = maxVolumeCubicYards - volumeCubicYards;
-    const remainingCapacityCubicFeet = remainingCapacityCubicYards * cubicYardsToCubicFeet;
-    const remainingCapacityGallons = remainingCapacityCubicFeet * gallonConversion;
-    const newVolumeCubicFeet = newVolumeCubicYards * cubicYardsToCubicFeet;
-    const newVolumeGallons = newVolumeCubicFeet * gallonConversion;
-
-    document.getElementById('cumulativeVolume').textContent = `Cumulative Volume: ${volumeCubicFeet.toFixed(2)} cu.ft. / ${volumeGallons.toFixed(2)} gallons`;
-    document.getElementById('remainingCapacity').textContent = `Remaining Capacity: ${remainingCapacityCubicFeet.toFixed(2)} cu.ft. / ${remainingCapacityGallons.toFixed(2)} gallons`;
-    document.getElementById('anticipatedDepthIncrease').textContent = `Anticipated Depth Increase: ${depthIncrease.toFixed(2)} ft`;
-    document.getElementById('newVolume').textContent = `New Volume After Rainfall: ${newVolumeCubicFeet.toFixed(2)} cu.ft. / ${newVolumeGallons.toFixed(2)} gallons`;
-
-    drawChart(volumeCubicFeet, newVolumeCubicFeet);
-}
-
-function interpolate(data, value, keyX, keyY) {
-    let i = 0;
-    while (i < data.length && value > data[i][keyX]) {
-        i++;
-    }
-    if (i === 0) return data[0][keyY];
-    if (i === data.length) return data[data.length - 1][keyY];
-
-    const x1 = data[i - 1][keyX];
-    const y1 = data[i - 1][keyY];
-    const x2 = data[i][keyX];
-    const y2 = data[i][keyY];
-
-    return y1 + (y2 - y1) * (value - x1) / (x2 - x1);
-}
-
-function drawChart(volumeCubicFeet, newVolumeCubicFeet) {
-    var data = google.visualization.arrayToDataTable([
-        ['Volume', 'Amount'],
-        ['Current Volume', volumeCubicFeet],
-        ['Volume After Rainfall', newVolumeCubicFeet]
-    ]);
-
-    var options = {
-        title: 'Basin Capacity',
-        pieHole: 0.4,
-        colors: ['#3498db', '#f1c40f'],
-        is3D: false,
-        animation: {
-            startup: true,
-            duration: 1000,
-            easing: 'out',
+        // Find the cumulative volume and depth increase per inch of rainfall through interpolation
+        for (let i = 1; i < dataPoints.length; i++) {
+            if (depth >= dataPoints[i].depth) {
+                cumulativeVolume = dataPoints[i].cumulativeVol;
+                depthIncreasePerInch = dataPoints[i].depthIncreasePerInch;
+            } else {
+                cumulativeVolume = interpolate(
+                    dataPoints[i - 1].cumulativeVol,
+                    dataPoints[i].cumulativeVol,
+                    dataPoints[i - 1].depth,
+                    dataPoints[i].depth,
+                    depth
+                );
+                depthIncreasePerInch = interpolate(
+                    dataPoints[i - 1].depthIncreasePerInch,
+                    dataPoints[i].depthIncreasePerInch,
+                    dataPoints[i - 1].depth,
+                    dataPoints[i].depth,
+                    depth
+                );
+                break;
+            }
         }
-    };
 
-    var chart = new google.visualization.PieChart(document.getElementById('piechart'));
-    chart.draw(data, options);
-}
+        // Calculate the anticipated depth increase
+        const anticipatedDepthIncrease = anticipatedRainfall * depthIncreasePerInch / 12; // Convert inches to feet
+        const newDepth = depth + anticipatedDepthIncrease;
+        let newCumulativeVolume = 0;
 
+        // Interpolate again to find the new cumulative volume after rainfall
+        for (let i = 1; i < dataPoints.length; i++) {
+            if (newDepth >= dataPoints[i].depth) {
+                newCumulativeVolume = dataPoints[i].cumulativeVol;
+            } else {
+                newCumulativeVolume = interpolate(
+                    dataPoints[i - 1].cumulativeVol,
+                    dataPoints[i].cumulativeVol,
+                    dataPoints[i - 1].depth,
+                    dataPoints[i].depth,
+                    newDepth
+                );
+                break;
+            }
+        }
+
+        const remainingCapacity = maxVolume - newCumulativeVolume;
+
+        // Update the page with the new values
+        document.getElementById("cumulativeVolume").textContent = Intl.NumberFormat().format(Math.round(cumulativeVolume)) + " cu.ft.";
+        document.getElementById("cumulativeVolumeGallons").textContent = Intl.NumberFormat().format(Math.round(cumulativeVolume * gallonConversion)) + " gallons";
+        document.getElementById("remainingCapacity").textContent = Intl.NumberFormat().format(Math.round(remainingCapacity)) + " cu.ft.";
+        document.getElementById("remainingCapacityGallons").textContent = Intl.NumberFormat().format(Math.round(remainingCapacity * gallonConversion)) + " gallons";
+        document.getElementById("anticipatedDepthIncrease").textContent = anticipatedDepthIncrease.toFixed(2) + " ft";
+        document.getElementById("newVolumeAfterRain").textContent = Intl.NumberFormat().format(Math.round(newCumulativeVolume)) + " cu.ft.";
+        document.getElementById("newVolumeGallonsAfterRain").textContent = Intl.NumberFormat().format(Math.round(newCumulativeVolume * gallonConversion)) + " gallons";
+
+        drawChart(newCumulativeVolume, remainingCapacity);
+    }
+
+    function drawChart(cumulativeVolume, remainingCapacity) {
+        var data = google.visualization.arrayToDataTable([
+            ['Task', 'Volume'],
+            ['Used Volume', cumulativeVolume],
+            ['Remaining Capacity', remainingCapacity]
+        ]);
+
+        var options = {
+            title: 'Basin Capacity',
+            pieHole: 0.4,
+            colors: ['#3498db', '#e74c3c'],
+        };
+
+        var chart = new google.visualization.PieChart(document.getElementById('piechart'));
+        chart.draw(data, options);
+    }
 </script>
 
 </body>
