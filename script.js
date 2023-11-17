@@ -1,70 +1,109 @@
-const maxVolume = 1032685; // Maximum capacity in cu.ft.
-const gallonConversion = 7.48; // 1 cubic foot equals 7.48 gallons
-let currentVolume = 0; // Global variable to store the current volume
+google.charts.load('current', {'packages':['corechart']});
+google.charts.setOnLoadCallback(drawInitialChart);
 
-const depthToVolume = [
-    { depth: 0, cumulativeVol: 0 },
-    { depth: 2, cumulativeVol: 92560 },
-    { depth: 4, cumulativeVol: 194773 },
-    { depth: 6, cumulativeVol: 306949 },
-    { depth: 8, cumulativeVol: 429544 },
-    { depth: 10, cumulativeVol: 563060 },
-    { depth: 12, cumulativeVol: 707822 },
-    { depth: 14, cumulativeVol: 864196 },
-    { depth: 14.5, cumulativeVol: 1032685 }
+const maxVolumeCubicYards = 1032685 / 27; // Convert the maximum volume to cubic yards
+const gallonConversion = 7.48;
+const cubicYardsToCubicFeet = 27;
+
+const depthData = [
+    { elevation: 106.5, volume: 41145, depthIncreasePerInch: 3.36 },
+    { elevation: 106, volume: 39441, depthIncreasePerInch: 3.72 },
+    { elevation: 104.5, volume: 34721, depthIncreasePerInch: 3.93 },
+    { elevation: 104, volume: 33204, depthIncreasePerInch: 4.00 },
+    { elevation: 102, volume: 27416, depthIncreasePerInch: 4.32 },
+    { elevation: 100, volume: 22057, depthIncreasePerInch: 4.67 },
+    { elevation: 98, volume: 17115, depthIncreasePerInch: 5.08 },
+    { elevation: 96, volume: 12580, depthIncreasePerInch: 5.54 },
+    { elevation: 94, volume: 8428, depthIncreasePerInch: 6.07 },
+    { elevation: 92, volume: 4644, depthIncreasePerInch: 6.68 },
+    { elevation: 90, volume: 1216, depthIncreasePerInch: 7.40 }
 ];
 
-const depthToArea = [
-    { depth: 0, contourArea: 43928.88 },
-    { depth: 2, contourArea: 48671.15 },
-    { depth: 4, contourArea: 53581.53 },
-    { depth: 6, contourArea: 58632.71 },
-    { depth: 8, contourArea: 64001.61 },
-    { depth: 10, contourArea: 69552.81 },
-    { depth: 12, contourArea: 75246.65 },
-    { depth: 14, contourArea: 81163.95 },
-    { depth: 14.5, contourArea: 81163.95 }
-];
+function drawInitialChart() {
+    var data = google.visualization.arrayToDataTable([
+        ['Volume', 'Amount'],
+        ['Cumulative Volume', 0],
+        ['Remaining Capacity', maxVolumeCubicYards * cubicYardsToCubicFeet],
+        ['Volume After Rainfall', 0]
+    ]);
 
-function linearInterpolation(arr, inputDepth, prop) {
+    var options = {
+        title: 'Basin Capacity - Initial State',
+        pieHole: 0.4,
+        colors: ['#e0e0e0', '#3498db', '#c7ecee'],
+        is3D: false,
+        pieSliceText: 'none',
+        legend: { position: 'none' },
+        animation: {
+            startup: true,
+            duration: 1000,
+            easing: 'out',
+        }
+    };
+
+    var chart = new google.visualization.PieChart(document.getElementById('piechart'));
+    chart.draw(data, options);
+}
+
+function calculate() {
+    const depth = parseFloat(document.getElementById('depth').value);
+    const anticipatedRainfall = parseFloat(document.getElementById('rainfall').value);
+    
+    const volumeCubicYards = interpolate(depthData, depth, 'elevation', 'volume');
+    const depthIncreasePerInch = interpolate(depthData, depth, 'elevation', 'depthIncreasePerInch');
+    
+    const depthIncrease = depthIncreasePerInch * anticipatedRainfall;
+    const newDepth = depth + depthIncrease;
+    const newVolumeCubicYards = interpolate(depthData, newDepth, 'elevation', 'volume');
+
+    const volumeCubicFeet = volumeCubicYards * cubicYardsToCubicFeet;
+    const volumeGallons = volumeCubicFeet * gallonConversion;
+    const remainingCapacityCubicYards = maxVolumeCubicYards - volumeCubicYards;
+    const remainingCapacityCubicFeet = remainingCapacityCubicYards * cubicYardsToCubicFeet;
+    const remainingCapacityGallons = remainingCapacityCubicFeet * gallonConversion;
+    const newVolumeCubicFeet = newVolumeCubicYards * cubicYardsToCubicFeet;
+    const newVolumeGallons = newVolumeCubicFeet * gallonConversion;
+
+    document.getElementById('cumulativeVolume').textContent = `${volumeCubicFeet.toFixed(2)} cu.ft. / ${volumeGallons.toFixed(2)} gallons`;
+    document.getElementById('remainingCapacity').textContent = `${remainingCapacityCubicFeet.toFixed(2)} cu.ft. / ${remainingCapacityGallons.toFixed(2)} gallons`;
+    document.getElementById('anticipatedDepthIncrease').textContent = `${depthIncrease.toFixed(2)} ft`;
+    document.getElementById('newVolume').textContent = `${newVolumeCubicFeet.toFixed(2)} cu.ft. / ${newVolumeGallons.toFixed(2)} gallons`;
+
+    drawChart(volumeCubicFeet, remainingCapacityCubicFeet, newVolumeCubicFeet);
+}
+
+function interpolate(data, value, keyX, keyY) {
     let i = 0;
-    while (i < arr.length && inputDepth > arr[i].depth) {
+    while (i < data.length && value > data[i][keyX]) {
         i++;
     }
+    if (i === 0) {
+        return data[0][keyY];
+    } else if (i === data.length) {
+        return data[data.length - 1][keyY];
+    }
+    const x1 = data[i - 1][keyX];
+    const y1 = data[i - 1][keyY];
+    const x2 = data[i][keyX];
+    const y2 = data[i][keyY];
 
-    if (i === 0) return arr[0][prop];
-    if (i === arr.length) return arr[arr.length - 1][prop];
-
-    const x1 = arr[i - 1].depth;
-    const y1 = arr[i - 1][prop];
-    const x2 = arr[i].depth;
-    const y2 = arr[i][prop];
-
-    return ((inputDepth - x1) * (y2 - y1) / (x2 - x1)) + y1;
+    return y1 + (y2 - y1) * (value - x1) / (x2 - x1);
 }
 
-function calculateVolume(depth) {
-    return linearInterpolation(depthToVolume, depth, 'cumulativeVol');
-}
+function drawChart(cumulativeVolume, remainingCapacity, newVolume) {
+    var data = google.visualization.arrayToDataTable([
+        ['Volume', 'Amount'],
+        ['Cumulative Volume', cumulativeVolume],
+        ['Remaining Capacity', remainingCapacity],
+        ['Volume After Rainfall', newVolume]
+    ]);
 
-function calculateRainfall() {
-    const gaugeDepth = parseFloat(document.getElementById("gaugeDepth").value);
-    const rainfall = parseFloat(document.getElementById("rainfall").value);
-    const recharge = rainfall * 2; // as 1 inch of rain = 2 inches of recharge
+    var options = {
+        title: 'Basin Capacity',
+        pieHole: 0.4,
+        colors: ['#3498db', '#e74c3c', '#f1c40f']
+    };
 
-    currentVolume = calculateVolume(gaugeDepth);
-    const currentSurfaceArea = linearInterpolation(depthToArea, gaugeDepth, 'contourArea');
-    
-    const anticipatedVolume = recharge * currentSurfaceArea;
-    const newTotalVolume = currentVolume + anticipatedVolume;
-    const newRemainingCapacity = maxVolume - newTotalVolume;
-
-    document.getElementById("currentVolume").textContent = Intl.NumberFormat().format(Math.round(currentVolume)) + " cu.ft.";
-    document.getElementById("currentVolumeGallons").textContent = Intl.NumberFormat().format(Math.round(currentVolume * gallonConversion)) + " gallons";
-    
-    document.getElementById("anticipatedVolume").textContent = Intl.NumberFormat().format(Math.round(anticipatedVolume)) + " cu.ft.";
-    document.getElementById("anticipatedVolumeGallons").textContent = Intl.NumberFormat().format(Math.round(anticipatedVolume * gallonConversion)) + " gallons";
-    
-    document.getElementById("newTotalVolume").textContent = Intl.NumberFormat().format(Math.round(newTotalVolume)) + " cu.ft.";
-    document.getElementById("newRemainingCapacity").textContent = Intl.NumberFormat().format(Math.round(newRemainingCapacity)) + " cu.ft.";
+    var chart = new google.visualization.PieChart(document.getElementById('piechart'));
+    chart.draw(data, options);
 }
