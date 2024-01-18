@@ -56,7 +56,3 @@ This project was created by Mohammad Sharif at Aptim Environmental & Infrastruct
 ## 8. License
 
 The project remains under the MIT License.
-
-## 8. License
-
-The project remains under the MIT License.
