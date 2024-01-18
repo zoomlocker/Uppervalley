@@ -9,7 +9,8 @@ Welcome to the updated UVDS Leachate Basin Capacity web application. This README
 4. Technologies Used
 5. Advanced Calculations & Interpolation
 6. Further Development
-7. License & Acknowledgments
+7. Acknowledgments
+8. License
 
 ## 1. Introduction
 
@@ -48,6 +49,14 @@ Potential future updates include:
 - **User Customization**: Allowing users to input specific basin parameters for tailored calculations.
 - **Mobile Responsiveness**: Optimizing the site for mobile device usage.
 
-## 7. License & Acknowledgments
+## 7. Acknowledgments
 
-The project remains under the MIT License. A big thank you to the UVDS team for their invaluable feedback and suggestions in this update.
+This project was created by Mohammad Sharif at Aptim Environmental & Infrastructure LLC. Special acknowledgment and thanks go to Chris Richgels, PE, for his invaluable help and assisting with the mathematical calculations and providing overall insight on how to tackle creating this application. Additional gratitude is extended to the UVDS team for their support and collaboration.
+
+## 8. License
+
+The project remains under the MIT License.
+
+## 8. License
+
+The project remains under the MIT License.
